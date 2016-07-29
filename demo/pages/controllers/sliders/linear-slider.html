@@ -1,0 +1,149 @@
+<div class="row demo">
+    <div class="col-sm-12 description">
+        <div class="col-sm-4">
+            <h1>Linear Slider</h1>
+
+            <button class="btn fn-btn">Read more</button>
+            <button class="btn fn-btn">Try..</button>
+        </div>
+        <div class="col-sm-8">
+            <div class="col-xs-12 test"></div>
+            <div class="col-xs-6 test"></div>
+            <div class="col-xs-6 test"></div>
+            <div class="col-xs-4 test"></div>
+            <div class="col-xs-4 test"></div>
+            <div class="col-xs-4 test"></div>
+            <div class="col-xs-3 test"></div>
+            <div class="col-xs-3 test"></div>
+            <div class="col-xs-3 test"></div>
+            <div class="col-xs-3 test"></div>
+
+            <div class="col-xs-12 test" style="height: 150px"></div>
+            <div class="col-xs-12 test" style="height: 120px"></div>
+            <div class="col-xs-12 test" style="height: 90px"></div>
+            <div class="col-xs-12 test" style="height: 60px"></div>
+            <div class="col-xs-12 test" style="height: 30px"></div>
+        </div>
+    </div>
+    <div class="col-sm-12 try-example" style="min-height: 300px">
+        <div class="col-xs-6" style="min-height: 300px">
+            <div id="editor" class="col-sm-12" style="min-height: 400px">
+sisiliano.linearSlider($('#preview'), {
+    model: {
+        color: "green",
+        value: 23,
+        styles: {
+            pointer: {
+                label: {
+                    padding: {
+                        left: 2,
+                        right: 2,
+                        top: 2,
+                        bottom: 2
+                    },
+                    margin: {
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 10
+                    }
+                },
+                labelText: {
+                    "font-size": "10px"
+                },
+                value: {
+                    width: 20,
+                    height: 20,
+                    rx: "10",
+                    ry: "10"
+                },
+                valueShadow: {
+                    width: 30,
+                    height: 30,
+                    rx: "15",
+                    ry: "15"
+                }
+            },
+            ruler: {
+                line: {
+                    width: 1,
+                    height: 20
+                },
+                value: {
+                    "font-size": "10px"
+                }
+            },
+            sliderBar: {
+                valueBar: {
+                    height: 10
+                },
+                backgroundBar: {
+                    height: 8
+                },
+                padding: {
+                    left: 40,
+                    right: 40,
+                    top: 40,
+                    bottom: 40
+                }
+            }
+        }
+    }
+});
+            </div>
+            <div class="btn play-btn glyphicon glyphicon-play">
+            </div>
+        </div>
+        <div class="col-xs-6 preview" style="min-height: 400px;">
+            <div id="preview" style="width: 100%"></div>
+        </div>
+    </div>
+
+    <script>
+        var tds = $('.test');
+        var colors = [
+            "#F44336", ,
+            "#FF9800",
+            "#3F51B5",
+            "#E91E63",
+            "#4CAF50",
+            "#CDDC39",
+            "#009688",
+            "#4CAF50",
+            "#CDDC39",
+            "#673AB7",
+            "#FFEB3B",
+            "#673AB7",
+            "#E91E63",
+            "#FFEB3B",
+            "#673AB7",
+            "#CDDC39",
+            "#009688",
+            "#4CAF50",
+            "#CDDC39",
+            "#673AB7",
+            "#FFEB3B",
+        ];
+        for (var i = 0; i < tds.length; i++) {
+            var randomColorIndex = Math.floor(Math.random() * colors.length - 1);
+            sisiliano.linearSlider(tds[i], {
+                model: {
+                    color: colors[randomColorIndex],
+                    value: Math.random() * 100
+                }
+            });
+        }
+
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.getSession().setMode("ace/mode/javascript");
+
+        $(".play-btn").on("click", function (evt) {
+            $("#preview").empty();
+            $("#preview").html("<div class='col-lg-12 text-center'><i class='loading-animation fa-li fa fa-spinner fa-spin'></i></div>");
+            eval(editor.getValue());
+        });
+        $(".play-btn").draggable({containment: "parent"});
+        $(".play-btn").trigger("click");
+    </script>
+</div>

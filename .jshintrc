@@ -32,6 +32,7 @@
     "Handlebars": true,
     "jqUnit": true,
     "d3": true,
-    "sisiliano": true
+    "sisiliano": true,
+    "angular": true
   }
 }

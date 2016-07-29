@@ -1,3 +1,8 @@
+.navbar, .navbar.navbar-default {
+    background-color: #4CAF50;
+    box-shadow: 1px 1px 40px 1px black;
+}
+
 #editor {
     position: absolute;
     top: 0;
@@ -9,7 +14,7 @@
 .description {
     padding: 5px;
     /* background: rgba(0, 0, 0, 0.78); */
-    color: #4CAF50;
+    //color: #4CAF50;
     /* color: white; */
     font-style: italic;
     height: 100%;
@@ -17,40 +22,30 @@
     display: inline;
 }
 
-.fn-btn {
-    background-color: #4CAF50;
-    color: white;
-}
-
 .preview {
     height: 100%;
-}
-
-body {
-    padding: 20px;
-    background: #4CAF50;
 }
 
 .demo {
     margin: 0px;
     height: 100%;
     position: relative;
-    box-shadow: inset 1px 1px 5px 5px #4CAF50;
-    background-color: white;
+    //box-shadow: inset 1px 1px 5px 5px #4CAF50;
+    //background-color: white;
     padding: 25px;
-    border-color: #4CAF50;
+    //border-color: #4CAF50;
 }
 
 .preview {
     padding: 15px;
-    border: solid 5px #272822;
+    //border: solid 5px #272822;
     background: #272822;
-    box-shadow: inset 0px 0px 10px 10px #272822;
+    //box-shadow: inset 0px 0px 10px 10px #272822;
 }
 
 .introduction {
     padding: 40px;
-    color: white;
+    //color: white;
 }
 
 .introduction-title {

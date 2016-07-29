@@ -24,6 +24,9 @@
     "d3": "^3.5.17",
     "ace-builds": "^1.2.3",
     "font-awesome": "^4.6.3",
-    "jquery-simulate-ext": "^1.3.0"
+    "jquery-simulate-ext": "^1.3.0",
+    "bootstrap-material-design": "^0.5.10",
+    "angular": "^1.5.8",
+    "angular-route": "^1.5.8"
   }
 }
