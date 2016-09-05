@@ -1,4 +1,6 @@
 # music-ctrls
+
+[![Join the chat at https://gitter.im/music-ctrls/Lobby](https://badges.gitter.im/music-ctrls/Lobby.svg)](https://gitter.im/music-ctrls/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 This project was initiated by [Inclusive Design Institute](http://inclusivedesign.ca/) as a GSOC project 2016. 
 Click [here](https://github.com/dinukadesilva/music-ctrls/wiki) to see the progress of the project
 
