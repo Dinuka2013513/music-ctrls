@@ -1,27 +1,31 @@
 {
   "name": "sisiliano",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "This project provides a small collection of high-quality, responsive, SVG or DOM-based musical user interface controls.",
   "scripts": {
+    "postinstall": "node node_modules/bower/bin/bower install && grunt build",
     "test": "grunt build test"
   },
   "author": "Dinuka De Silba",
   "license": "ISC",
-  "devDependencies": {
-    "grunt": "^0.4.5",
-    "grunt-cli": "^1.0.1",
-    "grunt-contrib-clean": "^1.0.0",
-    "grunt-contrib-concat": "^1.0.1",
-    "grunt-contrib-connect": "^1.0.0",
-    "grunt-contrib-copy": "^1.0.0",
-    "grunt-contrib-handlebars": "^1.0.0",
-    "grunt-contrib-jshint": "^1.0.0",
-    "grunt-contrib-less": "^1.2.0",
-    "grunt-contrib-qunit": "^1.2.0",
-    "grunt-contrib-uglify": "^1.0.1",
-    "grunt-contrib-watch": "^1.0.0",
+  "repository": "https://github.com/dinukadesilva/music-ctrls/",
+  "dependencies": {
+    "bower": "1.7.9",
+    "grunt": "1.0.1",
+    "grunt-cli": "1.0.1",
+    "grunt-contrib-clean": "1.0.0",
+    "grunt-contrib-concat": "1.0.1",
+    "grunt-contrib-connect": "1.0.0",
+    "grunt-contrib-copy": "1.0.0",
+    "grunt-contrib-handlebars": "1.0.0",
+    "grunt-contrib-jshint": "1.0.0",
+    "grunt-contrib-less": "1.2.0",
+    "grunt-contrib-uglify": "2.0.0",
+    "grunt-contrib-watch": "1.0.0",
     "grunt-html2json": "git://github.com/Dinuka2013513/grunt-html2json.git",
-    "grunt-json": "^0.2.0"
+    "grunt-json": "0.2.0"
+  },
+  "devDependencies": {
+    "grunt-contrib-qunit": "1.2.0"
   }
 }

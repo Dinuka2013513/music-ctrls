@@ -1,4 +1,7 @@
 # music-ctrls
+
+[![Join the chat at https://gitter.im/music-ctrls/Lobby](https://badges.gitter.im/music-ctrls/Lobby.svg)](https://gitter.im/music-ctrls/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 This project was initiated by [Inclusive Design Institute](http://inclusivedesign.ca/) as a GSOC project 2016. 
 Click [here](https://github.com/dinukadesilva/music-ctrls/wiki) to see the progress of the project
 
@@ -12,16 +15,20 @@ This project will involve the creation of a small collection of high-quality, re
 
 # Getting started
 
+To run the demos included in this package, check out the code and run the following commands.
+
 ```
-bower install
 npm install
-grunt build
 grunt demo
 ```
+Then open the demo server in your browser of choice:
 
 http://localhost:8001/
 
 #Demo
+
+The demos are also available online, you can find them at:
+
 http://dinukadesilva.github.io/music-ctrls/demo/knob.html
 
 http://dinukadesilva.github.io/music-ctrls/demo/piano.html
