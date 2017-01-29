@@ -75,20 +75,20 @@
     };
 
     sisiliano.slider.onInit = function (that) {
-        that.locate("componentDiv").attr("tabindex", 0);
-        that.locate("componentDiv").attr("role", "slider");
+        that.container.attr("tabindex", 0);
+        that.container.attr("role", "slider");
 
         sisiliano.slider.addListeners(that);
     };
 
     sisiliano.slider.onMinValueChange = function (that, min) {
-        that.locate("componentDiv").attr("aria-valuemin", min);
+        that.container.attr("aria-valuemin", min);
         that.applier.change("size", sisiliano.slider.getSize(that));
         sisiliano.slider.onValueChange(that, that.model.value);
     };
 
     sisiliano.slider.onMaxValueChange = function (that, max) {
-        that.locate("componentDiv").attr("aria-valuemax", max);
+        that.container.attr("aria-valuemax", max);
         that.applier.change("size", sisiliano.slider.getSize(that));
         sisiliano.slider.onValueChange(that, that.model.value);
     };
@@ -114,7 +114,7 @@
         }
 
         //Update the aria-valuenow
-        that.locate("componentDiv").attr("aria-valuenow", formatedValue);
+        that.container.attr("aria-valuenow", formatedValue);
 
         //Update the value in the UI
         that.locate("valueLabel").text(formatedValue);
@@ -122,19 +122,18 @@
     };
 
     sisiliano.slider.addListeners = function (that) {
-        var keyDownHandler = function () {
+        var keyDownHandler = function (event) {
             var currentValue = sisiliano.slider.getValue(that);
-            if (d3.event.keyCode === 38 || d3.event.keyCode === 39) {
+            if (event.keyCode === 38 || event.keyCode === 39) {
                 that.applier.change("value", currentValue + that.model.tickValue);
-                d3.event.preventDefault();
-            } else if (d3.event.keyCode === 37 || d3.event.keyCode === 40) {
+                event.preventDefault();
+            } else if (event.keyCode === 37 || event.keyCode === 40) {
                 that.applier.change("value", currentValue - that.model.tickValue);
-                d3.event.preventDefault();
+                event.preventDefault();
             }
         };
 
-        d3.select(that.locate("componentDiv").get(0))
-            .on("keydown", keyDownHandler)
+        that.container.on("keydown", keyDownHandler)
 
             .on("mousedown", sisiliano.slider.setSliderActiveStatus.bind(this, that, true))
             .on("pointerdown", sisiliano.slider.setSliderActiveStatus.bind(this, that, true))

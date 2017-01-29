@@ -62,7 +62,7 @@
                 //Considering the firstly touched position if there are many touch points
                 evt = evt.type === "touchmove" ? evt.touches[0] : evt;
 
-                var mousePosition = {left: evt.pageX, top: evt.pageY};
+                var mousePosition = {left: evt.originalEvent.pageX, top: evt.originalEvent.pageY};
                 sisiliano.linearSlider.setValueByPosition(that, mousePosition);
 
                 evt.preventDefault(evt);
