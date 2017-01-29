@@ -3,9 +3,9 @@
  */
 (function (fluid) {
     "use strict";
-    
+
     fluid.defaults("sisiliano.component", {
-        gradeNames: ["sisiliano.util.colorable", "fluid.viewComponent"],
+        gradeNames: ["fluid.viewComponent"],
         model: {
             templateUrl: "",
             template: null
@@ -41,13 +41,12 @@
     });
 
     sisiliano.component.onInit = function (that) {
-        that.locate("componentDiv").attr("tabindex", 0);
+        that.container.attr("tabindex", 0);
 
-        //A fix for https://github.com/dinukadesilva/music-ctrls/issues/59
-        that.locate("svg")
+        that.container
             .on("mousedown pointerdown touchstart contextmenu", function (evt) {
                 evt.preventDefault();
-                that.locate("componentDiv").focus();
+                that.container.focus();
             });
     };
 
@@ -65,7 +64,7 @@
             descriptionsPane.append(descriptionElementOfTheComponent);
         }
 
-        that.locate("componentDiv").attr("aria-describedby", descriptionElementIdOfTheComponent);
+        that.container.attr("aria-describedby", descriptionElementIdOfTheComponent);
     };
 
     sisiliano.component.onTemplateChange = function (that, template, templateUrl) {
@@ -74,17 +73,9 @@
         that.applier.change("id", sisilianoId);
         that.container.html("<div class='sisiliano' id='" + sisilianoId + "'></div>");
 
-        if (!template && templateUrl) {
-            sisiliano.util.getTemplate(function (template) {
-                that.options.template = template;
-                that.events.onCreate.fire();
-            }, templateUrl);
-
-            return false;
-        } else if (template) {
-            var html = template(that.model);
-            that.locate("componentDiv").html(html);
-        }
+        var template = Handlebars.compile(htmlTempl.templates[templateUrl]);
+        var html = template(that.model);
+        that.locate("componentDiv").html(html);
     };
 
     fluid.defaults("sisiliano.border", {

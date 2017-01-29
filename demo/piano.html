@@ -8,7 +8,9 @@
     <script src="./source/lib/infusion/infusion-all.js"></script>
     <script src="./source/lib/handlebars/handlebars-1.0.rc.2.js"></script>
     <script src="./source/bower_components/d3/d3.js"></script>
-    <script src="./source/dist/sisiliano.js"></script>
+    <script src="./source/dist/templates.js"></script>
+    <script src="../src/controllers/piano/piano.js"></script>
+    <script src="../src/core/util/make-music.js"></script>
     <script src="./source/bower_components/ace-builds/src-noconflict/ace.js"></script>
 
     <script>
@@ -29,6 +31,11 @@
             var colors = ['#FF0000', 'blue', 'yellow', 'red', 'orange', 'blue'];
             for (var i = 0; i < tds.length; i++) {
                 sisiliano.piano($(tds[i]), {
+                    model: {
+                        startingNote: "G",
+                        startingPitch: 0,
+                        size: 14
+                    },
                     listeners: {
                         onKeyPress: {
                             func: "{musicBox}.play",
@@ -36,6 +43,10 @@
                         },
                         onKeyRelease: {
                             func: "{musicBox}.release",
+                            args: ["{arguments}.0"]
+                        },
+                        onStop: {
+                            func: "{musicBox}.releaseAll",
                             args: ["{arguments}.0"]
                         }
                     },
@@ -103,7 +114,7 @@
             <br>
             <button class="btn fn-btn">Read more</button>
         </div>
-        <div class="box" style="width: 50%">
+        <div class="box" style="width: 50%; height: 200px">
             <div class="box test" style="height: 100%; width: 100%"></div>
         </div>
     </div>
@@ -148,6 +159,10 @@ sisiliano.piano($('#preview'), {
         },
         onKeyRelease: {
             func: "{musicBox}.release",
+            args: ["{arguments}.0"]
+        },
+        onStop: {
+            func: "{musicBox}.releaseAll",
             args: ["{arguments}.0"]
         }
     },

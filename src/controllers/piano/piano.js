@@ -2,33 +2,15 @@
     "use strict";
 
     fluid.defaults("sisiliano.piano", {
-        gradeNames: ["sisiliano.border", "sisiliano.component"],
+        gradeNames: ["fluid.viewComponent"],
         templateUrl: "src/controllers/piano/piano.html",
         ariaDescription: "Piano keys are accessible by mouse and the keyboad as well. Only the active area of the piano is accessible by the keyboard. If you want to move the active area, use left and right keys.",
         model: {
-            color: "#4CAF50",
-            styles: {
-                keyBoard: {
-                    padding: {
-                        top: 20,
-                        bottom: 20,
-                        left: 20,
-                        right: 20
-                    },
-                    whiteKey: {
-                        width: 40,
-                        height: 150
-                    },
-                    blackKey: {
-                        width: 27,
-                        height: 100
-                    }
-                }
-            },
+            startingNote: "G",
+            startingPitch: 0,
+            size: 14,
             keyBoard: {
                 keys: [],
-                length: 36,
-                start: 0,
                 activeArea: {
                     start: 0,
                     end: 10
@@ -37,27 +19,26 @@
         },
         events: {
             onKeyPress: null,
-            onKeyRelease: null
+            onKeyRelease: null,
+            onStop: null,
+            onActiveAreaChange: null
         },
         selectors: {
             root: ".sisiliano",
-            svg: ".sisiliano-piano",
-            keyBoard: ".sisiliano-piano-key-board",
+            piano: ".sisiliano-piano",
             whiteKeys: ".sisiliano-piano-white-key",
             blackKeys: ".sisiliano-piano-black-key",
-            keys: ".sisiliano-piano-key",
-            activeAreaStatus: ".sisiliano-piano-active-area-status",
-            pressedKeys: ".sisiliano-piano-key-pressed"
+            keys: ".sisiliano-piano-key"
         },
         listeners: {
             onCreate: [
-                {
-                    func: "sisiliano.piano.generateKeyboard",
-                    args: ["{that}"]
-                },
+                /*{
+                 func: "sisiliano.piano.generateKeyboard",
+                 args: ["{that}"]
+                 },*/
                 {
                     func: "sisiliano.piano.onCreate",
-                    args: ["{that}", "{that}.dom.keyBoard"]
+                    args: ["{that}"]
                 }
             ]
         },
@@ -73,111 +54,101 @@
         }
     });
 
+    sisiliano.piano.onCreate = function (that) {
+        that.container.attr("tabindex", 0);
+
+        that.container
+            .on("mousedown pointerdown touchstart contextmenu", function (evt) {
+                evt.preventDefault();
+                that.container.focus();
+            });
+
+        var template = Handlebars.compile(htmlTempl.templates[that.options.templateUrl]);
+        var html = template(that.model);
+        that.container.html(html);
+
+        sisiliano.piano.generateKeyboard(that);
+    };
+
     sisiliano.piano.onChangeActiveArea = function (that, keys, activeArea) {
-        var allocatedComputerKeysForThePiano = [81, 65, 87, 83, 69, 68, 82, 70, 84, 71, 89, 72,
+        var allocatedComputerKey = [81, 65, 87, 83, 69, 68, 82, 70, 84, 71, 89, 72,
             85, 74, 73, 75, 79, 76, 80, 186, 219, 222, 221];
 
-        var whiteKeys = sisiliano.piano.getWhiteKeys(keys);
-
-        if (whiteKeys.length > 0) {
-            var activeStartKey = whiteKeys[activeArea.start];
-            var activeEndKey = whiteKeys[Math.min(activeArea.end, that.model.keyBoard.length - 1)];
-            var activeStartIndex = activeStartKey.index;
-            var activeEndIndex = activeEndKey.index;
-            var activeAreaStatusMessage = "The piano is active from " + sisiliano.piano.getMusicNote(activeStartKey) + " to " + sisiliano.piano.getMusicNote(activeEndKey);
-            that.locate("activeAreaStatus").text(activeAreaStatusMessage);
-
-            if (activeStartIndex > 0) {
-                var previousKey = keys[activeStartIndex - 1];
-                if (previousKey.color === "BLACK") {
-                    activeStartIndex--;
-                }
+        if (!activeArea) {
+            activeArea = {
+                start: 0,
+                end: 10
             }
+        }
+        var whiteKeyElements = that.locate("whiteKeys");
+        var keyElements = that.locate("keys");
 
-            if (activeEndIndex < keys.length - 1) {
-                var nextKey = keys[activeEndIndex + 1];
-                if (nextKey.color === "BLACK") {
-                    activeEndIndex++;
-                }
-            }
+        var startKeyElement = $(whiteKeyElements[activeArea.start]);
+        var endKeyElement = $(whiteKeyElements[activeArea.end]);
+        var startIndex = startKeyElement ? startKeyElement.data("index") : 0;
+        var endIndex = endKeyElement ? endKeyElement.data("index") : whiteKeyElements[whiteKeyElements.length - 1];
 
-            var allocatedKeyIndex = 0;
-            for (var i = 0; i < keys.length; i++) {
-                var key = keys[i];
-                key.isActive = i >= activeStartIndex && i <= activeEndIndex;
 
-                if (key.isActive && allocatedKeyIndex === 0 && key.color === "WHITE") {
-                    allocatedKeyIndex++;
-                }
+        var keyCodeIndex = 1;
 
-                if (allocatedKeyIndex > 1 && key.color === "WHITE" && keys[i - 1].color === "WHITE") {
-                    allocatedKeyIndex++;
-                }
-
-                if (key.isActive) {
-                    key.keyCode = allocatedComputerKeysForThePiano[allocatedKeyIndex];
-                    allocatedKeyIndex++;
-                } else {
-                    key.keyCode = null;
-                }
-            }
-
+        var startPrevKey = keys[startIndex - 1];
+        if (startPrevKey && startPrevKey.color === "BLACK") {
+            startIndex--;
         }
 
-        //TODO fix
-        //that.applier.change("keyBoard.keys", keys);
-        sisiliano.piano.onKeysChange(that, keys);
-        sisiliano.piano.clearPressedNodes(that);
+        var endNextKey = keys[endIndex + 1];
+        if (endNextKey && endNextKey.color === "BLACK") {
+            endIndex++;
+        }
+
+        that.locate("keys").each(function (elementIndex) {
+            var index = $(this).data("index");
+            var keyCode = index >= startIndex && index <= endIndex ? allocatedComputerKey[keyCodeIndex++] : undefined;
+            $(this).data("keyCode", keyCode);
+            $(this).attr("keyCode", keyCode);
+            if (keyCode === undefined) {
+                $(this).addClass("sisiliano-piano-key-disabled");
+            } else {
+                $(this).removeClass("sisiliano-piano-key-disabled");
+            }
+
+            var nextKey = keys[elementIndex + 1];
+            if (nextKey && nextKey.color === keys[index].color) {
+                keyCodeIndex++;
+            }
+        });
     };
 
     sisiliano.piano.onKeysChange = function (that, keys) {
-        d3.select(that.container.get(0)).selectAll(".sisiliano-piano-key").each(function () {
-            var key = sisiliano.piano.getElementKey(d3.select(this), keys);
-            sisiliano.piano.updateKey(that, key, d3.select(this));
-        });
-    };
+        that.locate("piano").html("");
 
-    sisiliano.piano.getElementKey = function (element, keys) {
-        return keys[element.attr("index")];
-    };
+        var whiteKeyWidth = (100 / 14);
+        var blackKeyWidth = whiteKeyWidth * (2 / 3);
+        var prefix = 0;
+        for (var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            var keyElement = $("<div/>");
 
-    sisiliano.piano.onCreate = function (that) {
-        that.locate("keyBoard").empty();
+            keyElement.addClass("sisiliano-piano-key");
+            if (key.color === "BLACK") {
+                keyElement.addClass("sisiliano-piano-black-key");
+                keyElement.css("left", (prefix - (blackKeyWidth / 2)) + "%");
+                keyElement.css("width", blackKeyWidth + "%");
+            } else if (key.color === "WHITE") {
+                keyElement.addClass("sisiliano-piano-white-key");
+                keyElement.css("left", prefix + "%");
+                keyElement.css("width", whiteKeyWidth + "%");
+                prefix += whiteKeyWidth;
+            }
+            keyElement.data("index", i);
 
-        var keyBoardElm = d3.select(that.locate("keyBoard").get(0));
-        keyBoardElm.append("text")
-            .attr("x", 0)
-            .attr("y", 0)
-            .attr("aria-live", "assertive")
-            .attr("class", "sisiliano-piano-active-area-status")
-            .text("Piano is active from G to C");
+            keyElement.data("key", key);
 
-        fluid.each(sisiliano.piano.getWhiteKeys(that.model.keyBoard.keys), function (whiteKey) {
-            var key = keyBoardElm.append("rect")
-                .attr("index", whiteKey.index)
-                .attr("class", "sisiliano-piano-key sisiliano-piano-white-key")
-                .attr("height", whiteKey.height)
-                .attr("width", whiteKey.width)
-                .attr("x", whiteKey.x)
-                .attr("y", whiteKey.y);
-            sisiliano.util.applyStyles(key, that.model.styles.keyBoard.whiteKey,
-                ["x", "y", "width", "height"]);
-        });
+            that.locate("piano").append(keyElement);
+        }
 
-        fluid.each(sisiliano.piano.getBlackKeys(that.model.keyBoard.keys), function (blackKey) {
-            var key = keyBoardElm.append("rect")
-                .attr("index", blackKey.index)
-                .attr("class", "sisiliano-piano-key sisiliano-piano-black-key")
-                .attr("height", blackKey.height)
-                .attr("width", blackKey.width)
-                .attr("x", blackKey.x)
-                .attr("y", blackKey.y);
-            sisiliano.util.applyStyles(key, that.model.styles.keyBoard.blackKey,
-                ["x", "y", "width", "height"]);
-        });
-
-        sisiliano.piano.onChangeActiveArea(that, that.model.keyBoard.keys, that.model.keyBoard.activeArea);
         sisiliano.piano.appendListeners(that);
+        sisiliano.piano.onChangeActiveArea(that, that.model.keyBoard.keys, that.model.keyBoard.activeArea);
     };
 
     sisiliano.piano.moveTabBy = function (that, increaseBy) {
@@ -186,7 +157,7 @@
                 start: that.model.keyBoard.activeArea.start + increaseBy,
                 end: that.model.keyBoard.activeArea.end + increaseBy
             };
-            var whiteKeys = sisiliano.piano.getWhiteKeys(that.model.keyBoard.keys);
+            var whiteKeys = that.locate("whiteKeys");
             var isValid = newActiveArea.start >= 0 && newActiveArea.start < whiteKeys.length &&
                 newActiveArea.end >= 0 && newActiveArea.end < whiteKeys.length &&
                 newActiveArea.start < newActiveArea.end;
@@ -196,129 +167,53 @@
         }
     };
 
-    sisiliano.piano.clearPressedNodes = function (that) {
-        for (var i = 0; i < that.model.keyBoard.keys.length; i++) {
-            var key = that.model.keyBoard.keys[i];
-            key.isPressed = false;
-            sisiliano.piano.updateKey(that, key);
-            sisiliano.piano.releaseKey(that, key);
-        }
-    };
 
     sisiliano.piano.appendListeners = function (that) {
-        var mouseDown = false;
-        var keyPressHandler = function () {
-            mouseDown = true;
-            var clickedIndex = d3.select(this).attr("index");
-            var clickedKey = that.model.keyBoard.keys[clickedIndex];
-            if (mouseDown && !clickedKey.isPressed) {
-                clickedKey.isPressed = true;
-                sisiliano.piano.updateKey(that, clickedKey);
-                sisiliano.piano.playKey(that, clickedKey);
-            }
-
-            d3.event.preventDefault();
-        };
-
-        var keyOverHandler = function () {
-            var clickedIndex = d3.select(this).attr("index");
-            var clickedKey = that.model.keyBoard.keys[clickedIndex];
-            if (mouseDown && !clickedKey.isPressed) {
-                clickedKey.isPressed = true;
-                sisiliano.piano.updateKey(that, clickedKey);
-                sisiliano.piano.playKey(that, clickedKey);
-            }
-
-            d3.event.preventDefault();
-        };
-
-        var keyUpHandler = function () {
-            mouseDown = false;
-            var clickedIndex = d3.select(this).attr("index");
-            var clickedKey = that.model.keyBoard.keys[clickedIndex];
-
-            clickedKey.isPressed = false;
-            sisiliano.piano.updateKey(that, clickedKey);
-            sisiliano.piano.releaseKey(that, clickedKey);
-        };
-
-        var keyMoveOutHndler = function () {
-            var clickedIndex = d3.select(this).attr("index");
-            var clickedKey = that.model.keyBoard.keys[clickedIndex];
-
-            clickedKey.isPressed = false;
-            sisiliano.piano.updateKey(that, clickedKey);
-            sisiliano.piano.releaseKey(that, clickedKey);
-
-            d3.event.preventDefault();
-        };
-
-        d3.select(that.container.get(0)).selectAll(".sisiliano-piano-key")
-            .on("mousedown", keyPressHandler)
-            .on("pointerdown", keyPressHandler)
-            .on("touchstart", keyPressHandler)
-
-            .on("mouseover", keyOverHandler)
-            .on("pointerover", keyOverHandler)
-            .on("touchmove", keyOverHandler)
-
-            .on("mouseup", keyUpHandler)
-            .on("pointerup", keyUpHandler)
-            .on("touchend", keyUpHandler)
-
-            .on("mouseleave", keyMoveOutHndler)
-            .on("pointerleave", keyMoveOutHndler)
-            .on("touchcancel", keyMoveOutHndler);
-
-        d3.select(that.locate("componentDiv").get(0)).on("keydown", function () {
-            var keyCode = d3.event.keyCode;
-            var mappedPianoKey = sisiliano.piano.getKeyByComputerKeyCode(keyCode, that.model.keyBoard.keys);
-            if (mappedPianoKey) {
-                if (!mappedPianoKey.isPressed) {
-                    mappedPianoKey.isPressed = true;
-                    sisiliano.piano.updateKey(that, mappedPianoKey);
-                    sisiliano.piano.playKey(that, mappedPianoKey);
-                }
-
-                d3.event.preventDefault();
-            }
-
-            //Handel the arrow click
-            switch (keyCode) {
-                case 37:
-                    sisiliano.piano.moveTabBy(that, -1);
-                    d3.event.preventDefault();
-                    break;
-                case 39:
-                    sisiliano.piano.moveTabBy(that, 1);
-                    d3.event.preventDefault();
-                    break;
+        that.locate("keys").on("mousedown pointerdown touchstart", function (evt) {
+            that.container.data("mouseDown", true)
+            that.events.onKeyPress.fire($(this).data("key").freequency);
+            evt.preventDefault();
+        });
+        that.locate("keys").on("mouseover pointerover touchmove", function () {
+            console.log("[mouseover] mouseDown : " + that.container.data("mouseDown"));
+            if (that.container.data("mouseDown")) {
+                that.events.onKeyPress.fire($(this).data("key").freequency);
             }
         });
+        that.locate("keys").on("mouseup pointerup touchend", function () {
+            that.container.data("mouseDown", false)
+            that.events.onStop.fire($(this).data("key").freequency);
+        });
+        that.locate("keys").on("mouseleave pointerleave touchcancel", function () {
+            that.events.onKeyRelease.fire($(this).data("key").freequency);
+        });
+        that.container.on("keydown", function (evt) {
+            var pressedKeyCode = evt.keyCode;
+            var pressedKeyElement = $("[keyCode=" + pressedKeyCode + "]", that.container);
+            console.log("[keydown]");
+            if (pressedKeyElement.length > 0) {
+                pressedKeyElement.addClass("sisiliano-piano-key-pressed");
 
-        d3.select(that.locate("componentDiv").get(0)).on("keyup", function () {
-            var keyCode = d3.event.keyCode;
-            var mappedPianoKey = sisiliano.piano.getKeyByComputerKeyCode(keyCode, that.model.keyBoard.keys);
-            if (mappedPianoKey) {
-                mappedPianoKey.isPressed = false;
-                sisiliano.piano.updateKey(that, mappedPianoKey);
-                sisiliano.piano.releaseKey(that, mappedPianoKey);
-                d3.event.preventDefault();
+                console.log("[keydown] onKeyPress");
+                that.events.onKeyPress.fire(pressedKeyElement.data("key").freequency);
             }
         });
+        that.container.on("keyup", function (evt) {
+            var pressedKeyCode = evt.keyCode;
+            var pressedKeyElement = $("[keyCode=" + pressedKeyCode + "]", that.container);
 
-        var outsideMouseUpHandler = function () {
-            mouseDown = false;
-            d3.select(that.container.get(0)).selectAll(".sisiliano-piano-key-pressed").each(keyUpHandler);
-        };
+            console.log("[keyup]");
+            if (pressedKeyElement.length > 0) {
+                pressedKeyElement.removeClass("sisiliano-piano-key-pressed");
 
-        document.addEventListener("mouseup", outsideMouseUpHandler);
-        document.addEventListener("pointerup", outsideMouseUpHandler);
-        document.addEventListener("touchend", outsideMouseUpHandler);
+                console.log("[keyup] onKeyRelease");
+                that.events.onKeyRelease.fire(pressedKeyElement.data("key").freequency);
+            }
+        });
     };
 
     sisiliano.piano.playKey = function (that, key) {
-        that.events.onKeyPress.fire(key.index, sisiliano.piano.getFreequency(key.octave, key.octaveIndex));
+        that.events.onKeyPress.fire(key.index, key.freequency);
     };
 
     sisiliano.piano.releaseKey = function (that, key) {
@@ -355,111 +250,67 @@
         });
     };
 
-    sisiliano.piano.getFreequency = function (octave, octaveIndex) {
-        var frequencyMap = [
-            261.626,
-            277.183,
-            293.665,
-            311.127,
-            329.628,
-            349.228,
-            369.994,
-            391.995,
-            415.305,
-            440,
-            466.164,
-            493.883
-        ];
+    var pianoScaleConfig = [
+        {color: "WHITE", musicNoteIdentifications: ["C"], freequency: 261.626},
+        {color: "BLACK", musicNoteIdentifications: ["C+", "D-"], freequency: 277.183},
+        {color: "WHITE", musicNoteIdentifications: ["D"], freequency: 293.665},
+        {color: "BLACK", musicNoteIdentifications: ["D#"], freequency: 311.127},
+        {color: "WHITE", musicNoteIdentifications: ["E"], freequency: 329.628},
+        {color: "WHITE", musicNoteIdentifications: ["F"], freequency: 349.228},
+        {color: "BLACK", musicNoteIdentifications: ["F+"], freequency: 369.994},
+        {color: "WHITE", musicNoteIdentifications: ["G"], freequency: 391.995},
+        {color: "BLACK", musicNoteIdentifications: ["G+"], freequency: 415.305},
+        {color: "WHITE", musicNoteIdentifications: ["A"], freequency: 440},
+        {color: "BLACK", musicNoteIdentifications: ["A+"], freequency: 466.164},
+        {color: "WHITE", musicNoteIdentifications: ["B"], freequency: 493.883}
+    ];
 
-        return Math.pow(2, octave) * frequencyMap[octaveIndex];
-    };
-
-    sisiliano.piano.OCTAVE = {
-        0: {color: "WHITE", note: "c"},
-        1: {color: "BLACK", note: "c#"},
-        2: {color: "WHITE", note: "d"},
-        3: {color: "BLACK", note: "d#"},
-        4: {color: "WHITE", note: "e"},
-        5: {color: "WHITE", note: "f"},
-        6: {color: "BLACK", note: "f#"},
-        7: {color: "WHITE", note: "g"},
-        8: {color: "BLACK", note: "g#"},
-        9: {color: "WHITE", note: "a"},
-        10: {color: "BLACK", note: "a#"},
-        11: {color: "WHITE", note: "b"}
-    };
-
-    sisiliano.piano.getPianoKey = function (key) {
-        return sisiliano.piano.OCTAVE[key.octaveIndex];
-    };
-
-
-    sisiliano.piano.getMusicNote = function (key) {
-        var pianoKey = sisiliano.piano.getPianoKey(key);
-
-        return pianoKey.note + " in octave " + (key.octave + 1);
-    };
-
-    sisiliano.piano.getWhiteKeys = function (keys) {
-        return sisiliano.piano.getKeysByColor(keys, "WHITE");
-    };
-
-    sisiliano.piano.getBlackKeys = function (keys) {
-        return sisiliano.piano.getKeysByColor(keys, "BLACK");
+    sisiliano.piano.getFreequency = function (musicNote, pitch) {
+        return Math.pow(2, pitch) * musicNote.freequency;
     };
 
     sisiliano.piano.generateKeyboard = function (that) {
-        that.model.styles.keyBoard.blackKey.width = (((that.model.styles.keyBoard.whiteKey.width - 1) / 3) * 2) + 1;
-        that.model.styles.keyBoard.blackKey.height = (that.model.styles.keyBoard.whiteKey.height / 3) * 2;
-        that.model.keyBoard.keys = [];
+        var startingNoteObjectIndex = 0;
+        var startingPitch = 0;
+        var size = 14;
+        var keys = [];
 
-        var keyCount = {
-            whiteKeys: 0,
-            blackKeys: 0
-        };
-        var index = 0;
-        for (var x = that.model.keyBoard.start; x < that.model.keyBoard.length + that.model.keyBoard.start; x++, index++) {
-            var octaveIndex = x % 12;
-            var key;
-            if (sisiliano.piano.OCTAVE[octaveIndex].color === "WHITE") {
-                key = {
-                    color: "WHITE",
-                    x: that.model.styles.keyBoard.padding.left + (keyCount.whiteKeys * that.model.styles.keyBoard.whiteKey.width),
-                    y: that.model.styles.keyBoard.padding.top,
-                    width: that.model.styles.keyBoard.whiteKey.width - 1,
-                    height: that.model.styles.keyBoard.whiteKey.height,
-                    index: index,
-                    octave: Math.floor(x / 12),
-                    octaveIndex: octaveIndex,
-                    className: "sisiliano-piano-key sisiliano-piano-white-key"
-                };
-
-                keyCount.whiteKeys++;
-            } else if (sisiliano.piano.OCTAVE[octaveIndex].color === "BLACK") {
-                key = {
-                    color: "BLACK",
-                    x: that.model.styles.keyBoard.padding.left + ((keyCount.whiteKeys - 1) * that.model.styles.keyBoard.whiteKey.width) + ((that.model.styles.keyBoard.whiteKey.width / 3) * 2),
-                    y: that.model.styles.keyBoard.padding.top,
-                    width: that.model.styles.keyBoard.blackKey.width,
-                    height: that.model.styles.keyBoard.blackKey.height,
-                    index: index,
-                    octave: Math.floor(x / 12),
-                    octaveIndex: octaveIndex,
-                    className: "sisiliano-piano-key sisiliano-piano-black-key"
-                };
-
-                keyCount.blackKeys++;
+        for (var i = 0; i < pianoScaleConfig.length; i++) {
+            if (pianoScaleConfig[i].musicNoteIdentifications.indexOf(that.model.startingNote) >= 0) {
+                startingNoteObjectIndex = i;
+                if (pianoScaleConfig[i].color === "BLACK") {
+                    startingNoteObjectIndex--;
+                }
+                break;
             }
-
-            that.model.keyBoard.keys.push(key);
         }
 
-        //Adjust the viewBox to fit with the entire div
-        that.applier.change("styles.controller", {
-            width: (keyCount.whiteKeys * that.model.styles.keyBoard.whiteKey.width) + that.model.styles.keyBoard.padding.left + that.model.styles.keyBoard.padding.right,
-            height: that.model.styles.keyBoard.whiteKey.height + that.model.styles.keyBoard.padding.top + that.model.styles.keyBoard.padding.bottom
-        });
+        if (that.model.startingPitch && typeof that.model.startingPitch === "number") {
+            startingPitch = that.model.startingPitch;
+            that.applier.change("startingPitch", startingPitch);
+        }
 
-        that.applier.change("", that.model);
+        if (that.model.size && typeof that.model.size === "number") {
+            size = that.model.size;
+            that.applier.change("size", size);
+        }
+
+        var index = 0;
+        for (var j = 0; j < size;) {
+            console.log("J : " + j);
+            var musicNoteObjectIndex = (startingNoteObjectIndex + index) % pianoScaleConfig.length;
+            var pitch = startingPitch + Math.floor((startingNoteObjectIndex + index) / pianoScaleConfig.length);
+            var musicNoteObject = pianoScaleConfig[musicNoteObjectIndex];
+            var key = JSON.parse(JSON.stringify(musicNoteObject));
+            key.freequency = sisiliano.piano.getFreequency(musicNoteObject, pitch);
+            key.index = index;
+            keys.push(key);
+            if (key.color === "WHITE") {
+                j++;
+            }
+            index++;
+        }
+
+        that.applier.change("keyBoard.keys", keys);
     };
 })(fluid);
