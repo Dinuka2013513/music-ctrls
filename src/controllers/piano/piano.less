@@ -21,11 +21,10 @@
 
     &:hover {
       transform: rotatex(10deg);
-      background: #4CAF50;
     }
 
     &.sisiliano-piano-key-disabled {
-      background: rgb(238, 238, 238);
+      background: rgb(191, 191, 191);
     }
   }
 
@@ -43,10 +42,12 @@
     -moz-box-sizing: border-box;
     box-sizing: border-box;
 
+    &.sisiliano-piano-key-pressed {
+      box-shadow: 0 2px 1px 0 #4CAF50;
+    }
+
     &:hover {
       transform: rotatex(10deg);
-      background: #4CAF50;
-      box-shadow: 0 2px 1px 0 #4CAF50;
     }
   }
 }

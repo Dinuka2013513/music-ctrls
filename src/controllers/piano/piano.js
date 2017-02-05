@@ -122,7 +122,7 @@
     sisiliano.piano.onKeysChange = function (that, keys) {
         that.locate("piano").html("");
 
-        var whiteKeyWidth = (100 / 14);
+        var whiteKeyWidth = (100 / that.model.size);
         var blackKeyWidth = whiteKeyWidth * (2 / 3);
         var prefix = 0;
         for (var i = 0; i < keys.length; i++) {
@@ -167,86 +167,43 @@
         }
     };
 
-
     sisiliano.piano.appendListeners = function (that) {
         that.locate("keys").on("mousedown pointerdown touchstart", function (evt) {
-            that.container.data("mouseDown", true)
-            that.events.onKeyPress.fire($(this).data("key").freequency);
+            that.container.data("mouseDown", true);
+            $(this).addClass("sisiliano-piano-key-pressed");
+            that.events.onKeyPress.fire($(this).data());
             evt.preventDefault();
         });
         that.locate("keys").on("mouseover pointerover touchmove", function () {
-            console.log("[mouseover] mouseDown : " + that.container.data("mouseDown"));
             if (that.container.data("mouseDown")) {
-                that.events.onKeyPress.fire($(this).data("key").freequency);
+                $(this).addClass("sisiliano-piano-key-pressed");
+                that.events.onKeyPress.fire($(this).data());
             }
         });
         that.locate("keys").on("mouseup pointerup touchend", function () {
-            that.container.data("mouseDown", false)
-            that.events.onStop.fire($(this).data("key").freequency);
+            that.container.data("mouseDown", false);
+            that.locate("keys").removeClass("sisiliano-piano-key-pressed");
+            that.events.onStop.fire($(this).data());
         });
         that.locate("keys").on("mouseleave pointerleave touchcancel", function () {
-            that.events.onKeyRelease.fire($(this).data("key").freequency);
+            $(this).removeClass("sisiliano-piano-key-pressed");
+            that.events.onKeyRelease.fire($(this).data());
         });
         that.container.on("keydown", function (evt) {
             var pressedKeyCode = evt.keyCode;
             var pressedKeyElement = $("[keyCode=" + pressedKeyCode + "]", that.container);
-            console.log("[keydown]");
             if (pressedKeyElement.length > 0) {
                 pressedKeyElement.addClass("sisiliano-piano-key-pressed");
-
-                console.log("[keydown] onKeyPress");
-                that.events.onKeyPress.fire(pressedKeyElement.data("key").freequency);
+                that.events.onKeyPress.fire(pressedKeyElement.data());
             }
         });
         that.container.on("keyup", function (evt) {
             var pressedKeyCode = evt.keyCode;
             var pressedKeyElement = $("[keyCode=" + pressedKeyCode + "]", that.container);
-
-            console.log("[keyup]");
             if (pressedKeyElement.length > 0) {
                 pressedKeyElement.removeClass("sisiliano-piano-key-pressed");
-
-                console.log("[keyup] onKeyRelease");
-                that.events.onKeyRelease.fire(pressedKeyElement.data("key").freequency);
+                that.events.onKeyRelease.fire(pressedKeyElement.data());
             }
-        });
-    };
-
-    sisiliano.piano.playKey = function (that, key) {
-        that.events.onKeyPress.fire(key.index, key.freequency);
-    };
-
-    sisiliano.piano.releaseKey = function (that, key) {
-        that.events.onKeyRelease.fire(key.index);
-    };
-
-    sisiliano.piano.updateKey = function (that, key, element) {
-        if (!element) {
-            element = that.container.find(".sisiliano-piano-key[index='" + key.index + "']");
-        }
-
-        var className = key.className;
-        className += key.isActive ? " sisiliano-piano-key-active" : " sisiliano-piano-key-inactive";
-        className += key.isPressed ? " sisiliano-piano-key-pressed" : "";
-
-        element.attr("class", className);
-    };
-
-    sisiliano.piano.getKeyByComputerKeyCode = function (computerKeyCode, keys) {
-        var matchingKeys = keys.filter(function (key) {
-            return key.keyCode === computerKeyCode;
-        });
-
-        if (matchingKeys.length === 0) {
-            return null;
-        } else {
-            return matchingKeys[0];
-        }
-    };
-
-    sisiliano.piano.getKeysByColor = function (keys, color) {
-        return keys.filter(function (key) {
-            return key.color === color;
         });
     };
 
@@ -297,7 +254,6 @@
 
         var index = 0;
         for (var j = 0; j < size;) {
-            console.log("J : " + j);
             var musicNoteObjectIndex = (startingNoteObjectIndex + index) % pianoScaleConfig.length;
             var pitch = startingPitch + Math.floor((startingNoteObjectIndex + index) / pianoScaleConfig.length);
             var musicNoteObject = pianoScaleConfig[musicNoteObjectIndex];

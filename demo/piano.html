@@ -39,15 +39,15 @@
                     listeners: {
                         onKeyPress: {
                             func: "{musicBox}.play",
-                            args: ["{arguments}.0", "{arguments}.1"]
+                            args: ["{arguments}.0.key.freequency"]
                         },
                         onKeyRelease: {
                             func: "{musicBox}.release",
-                            args: ["{arguments}.0"]
+                            args: ["{arguments}.0.key.freequency"]
                         },
                         onStop: {
                             func: "{musicBox}.releaseAll",
-                            args: ["{arguments}.0"]
+                            args: ["{arguments}.0.key.freequency"]
                         }
                     },
                     components: {
@@ -123,47 +123,20 @@
             <div id="editor" class="box" style="height: 400px; width: 100%">
 sisiliano.piano($('#preview'), {
     model: {
-        color: "#FF0000",
-        styles: {
-            keyBoard: {
-                padding: {
-                    top: 20,
-                    bottom: 20,
-                    left: 20,
-                    right: 20
-                },
-                whiteKey: {
-                    width: 40,
-                    height: 150
-                },
-                blackKey: {
-                    width: 27,
-                    height: 100
-                }
-            }
-        },
-        keyBoard: {
-            keys: [],
-            length: 36,
-            start: 0,
-            activeArea: {
-                start: 0,
-                end: 10
-            }
-        }
+        startingNote: "F"
     },
     listeners: {
         onKeyPress: {
             func: "{musicBox}.play",
-            args: ["{arguments}.0", "{arguments}.1"]
+            args: ["{arguments}.0.key.freequency"]
         },
         onKeyRelease: {
             func: "{musicBox}.release",
-            args: ["{arguments}.0"]
+            args: ["{arguments}.0.key.freequency"]
         },
         onStop: {
             func: "{musicBox}.releaseAll",
-            args: ["{arguments}.0"]
+            args: ["{arguments}.0.key.freequency"]
         }
     },
     components: {
